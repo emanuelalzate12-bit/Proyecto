@@ -66,3 +66,75 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+body {
+      background-color: #f8f9fa;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 1rem;
+    }
+
+    .layout {
+      display: flex;
+      gap: 2rem;
+    }
+
+    aside {
+      flex: 1;
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    main {
+      flex: 3;
+      background: white;
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .nav-link {
+      display: block;
+      padding: 0.75rem 1rem;
+      color: #333;
+      font-weight: 500;
+      border-radius: 0.5rem;
+      text-decoration: none;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      background-color: #e9ecef;
+    }
+
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .game-card {
+      text-align: center;
+      padding: 0.5rem;
+    }
+
+    .game-card img {
+      width: 100%;
+      max-height: 100px;
+      object-fit: contain;
+      border-radius: 0.5rem;
+      background-color: #f1f1f1;
+    }
+
+    .game-title {
+      font-weight: 600;
+      margin-top: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    .btn-fav {
+      margin-top: 0.5rem;
+      font-size: 1rem;
+    }

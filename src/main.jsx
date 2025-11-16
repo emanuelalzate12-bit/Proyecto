@@ -1,10 +1,11 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
+import React from 'react'
+import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
+import './App.css' // Usamos el CSS que ya existe en tu proyecto
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
+// Este es el punto de entrada de tu aplicación React
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
     <App />
-  </StrictMode>,
+  </React.StrictMode>,
 )
