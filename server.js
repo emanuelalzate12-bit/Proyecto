@@ -257,9 +257,12 @@ app.listen(port, () => {
     });
 });
 
-require('dotenv').config(); // Carga las variables del archivo .env
+import dotenv from 'dotenv';
+import pkg from 'pg';
 
-const { Client } = require('pg');
+dotenv.config();
+
+const { Client } = pkg;
 
 const client = new Client({
   connectionString: process.env.DATABASE_URL,
