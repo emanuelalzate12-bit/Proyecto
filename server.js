@@ -256,3 +256,21 @@ app.listen(port, () => {
         console.error('Error al conectar con la base de datos MySQL:', err.message);
     });
 });
+
+require('dotenv').config(); // Carga las variables del archivo .env
+
+const { Client } = require('pg');
+
+const client = new Client({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
+
+client.connect()
+  .then(() => console.log('✅ Conectado a Supabase'))
+  .catch(err => console.error('❌ Error de conexión', err));
+
+export default client;
+
