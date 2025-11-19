@@ -1,17 +1,23 @@
+// Importa los 'hooks' de React que se usarán: useState para manejar el estado y useEffect para efectos secundarios (como llamar a una API).
 import { useState, useEffect } from 'react'
 import './App.css'
 
+// --- Componente GameCard ---
+// Representa una tarjeta individual para cada juego en la lista.
 function GameCard({ game, onToggleFavorite, onDelete, onUpdate }) {
+  // Estado para controlar si la tarjeta está en modo de edición.
   const [isEditing, setIsEditing] = useState(false);
+  // Estado para guardar el nombre del juego mientras se edita.
   const [editedName, setEditedName] = useState(game.nombre);
 
+  // Función que se llama al guardar los cambios del nombre.
   const handleUpdate = () => {
-    if (editedName.trim() === '') {
+    if (editedName.trim() === '') { // Valida que el nombre no esté vacío.
       alert('El nombre no puede estar vacío.');
       return;
     }
-    onUpdate(game.id, editedName);
-    setIsEditing(false);
+    onUpdate(game.id, editedName); // Llama a la función del componente padre para actualizar en el servidor.
+    setIsEditing(false); // Sale del modo de edición.
   };
 
   const handleCancel = () => {
@@ -21,12 +27,15 @@ function GameCard({ game, onToggleFavorite, onDelete, onUpdate }) {
 
   return (
     <div className="game-card">
+      {/* Muestra la imagen del juego. Si falla la carga, muestra una imagen por defecto. */}
       <img 
         src={game.imagen_url} 
         alt={game.nombre} 
         onError={(e) => { e.target.onerror = null; e.target.src='img/placeholder.png' }} 
       />
+      {/* Renderizado condicional: Muestra un input si está en modo edición, o el título si no. */}
       {isEditing ? (
+        // Modo Edición: Muestra un campo de texto para cambiar el nombre.
         <div className="my-2">
           <input
             type="text"
@@ -39,14 +48,18 @@ function GameCard({ game, onToggleFavorite, onDelete, onUpdate }) {
       ) : (
         <div className="game-title">{game.nombre}</div>
       )}
+      {/* Renderizado condicional para los botones de acción. */}
       <div className="game-card-actions">
         {isEditing ? (
+          // Botones para Guardar o Cancelar la edición.
           <>
             <button className="btn btn-success btn-sm" onClick={handleUpdate}><i className="bi bi-check-lg"></i></button>
             <button className="btn btn-secondary btn-sm" onClick={handleCancel}><i className="bi bi-x-lg"></i></button>
           </>
         ) : (
+          // Botones para Marcar como favorito, Editar y Borrar.
           <>
+            {/* El ícono del corazón cambia dependiendo de si el juego es favorito o no. */}
             <button className="btn btn-outline-danger btn-sm" onClick={() => onToggleFavorite(game.id, !game.favorito)}>
               <i className={`bi ${game.favorito ? 'bi-heart-fill' : 'bi-heart'}`}></i>
             </button>
@@ -63,7 +76,10 @@ function GameCard({ game, onToggleFavorite, onDelete, onUpdate }) {
   );
 }
 
+// --- Componente AddGameForm ---
+// Formulario para añadir un nuevo juego a la biblioteca.
 function AddGameForm({ onGameAdded }) {
+  // Estado para deshabilitar el botón mientras se envía el formulario y evitar envíos duplicados.
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -79,8 +95,10 @@ function AddGameForm({ onGameAdded }) {
       return;
     }
 
+    // El proceso de añadir un juego se hace en dos pasos:
     try {
-      const uploadResponse = await fetch('/api/upload', {
+      // 1. Subir la imagen al servidor. El servidor devuelve la URL de la imagen guardada.
+      const uploadResponse = await fetch('http://localhost:3000/api/upload', {
         method: 'POST',
         body: formData,
       });
@@ -89,8 +107,8 @@ function AddGameForm({ onGameAdded }) {
 
       const { imageUrl } = await uploadResponse.json();
 
-      // 2. Crear el juego en la base de datos con la URL de la imagen
-      const gameResponse = await fetch('/api/games', {
+      // 2. Crear el registro del juego en la base de datos, usando la URL de la imagen obtenida en el paso 1.
+      const gameResponse = await fetch('http://localhost:3000/api/games', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nombre: nombre, imagen_url: imageUrl }),
@@ -98,14 +116,14 @@ function AddGameForm({ onGameAdded }) {
 
       if (!gameResponse.ok) throw new Error('Error al guardar el juego en la base de datos.');
 
-      // Limpiar formulario
+      // Si todo sale bien, se limpia el formulario y se llama a la función del padre para refrescar la lista.
       form.reset();
-      onGameAdded(); // Llama a la función para actualizar la lista de juegos
+      onGameAdded();
 
     } catch (error) {
       console.error('Error al añadir juego:', error);
       alert(error.message);
-    } finally {
+    } finally { // El bloque 'finally' se ejecuta siempre, haya error o no.
       setIsSubmitting(false);
     }
   };
@@ -122,18 +140,20 @@ function AddGameForm({ onGameAdded }) {
   );
 }
 
-
+// --- Componente GamesPanel ---
+// Panel principal que muestra la lista de juegos (todos o favoritos).
 function GamesPanel({ view, searchTerm }) {
+  // Estados para manejar la lista de juegos, errores y el estado de carga.
   const [games, setGames] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // La lógica de `view` y `searchTerm` ahora viene de las props
-
+  // Función para cargar los juegos desde la API.
   const loadGames = async () => {
     setLoading(true);
     setError(null);
-    const endpoint = view === 'favorites' ? '/api/games/favorites' : '/api/games';
+    // El endpoint de la API cambia dependiendo de si se quieren ver 'todos' o 'favoritos'.
+    const endpoint = view === 'favorites' ? 'http://localhost:3000/api/games/favorites' : 'http://localhost:3000/api/games';
     try {
       const response = await fetch(endpoint);
       if (!response.ok) {
@@ -149,16 +169,18 @@ function GamesPanel({ view, searchTerm }) {
     }
   };
 
+  // useEffect se ejecuta cuando el componente se monta y cada vez que la prop 'view' cambia.
   useEffect(() => {
     loadGames();
-  }, [view]); // Se ejecuta cada vez que 'view' cambia
+  }, [view]); // El array de dependencias [view] hace que este efecto se vuelva a ejecutar si 'view' cambia.
 
+  // Función para marcar/desmarcar un juego como favorito.
   const handleToggleFavorite = async (gameId, newFavoriteStatus) => {
     try {
-      const response = await fetch(`/api/games/${gameId}/favorite`, {
+      const response = await fetch(`http://localhost:3000/api/games/${gameId}/favorite`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ favorito: newFavoriteStatus ? 1 : 0 }),
+        body: JSON.stringify({ favorito: newFavoriteStatus }),
       });
 
       if (response.ok) {
@@ -167,7 +189,7 @@ function GamesPanel({ view, searchTerm }) {
           setGames(games.filter(game => game.id !== gameId));
         } else {
           // En cualquier otro caso, actualizamos el item
-          setGames(games.map(game => game.id === gameId ? { ...game, favorito: newFavoriteStatus } : game));
+          setGames(games.map(game => game.id === gameId ? { ...game, favorito: newFavoriteStatus ? 1 : 0 } : game));
         }
       } else {
         console.error('Falló la actualización en el servidor');
@@ -177,17 +199,18 @@ function GamesPanel({ view, searchTerm }) {
     }
   };
 
+  // Función que se pasa al formulario de añadir juego para refrescar la lista.
   const handleGameAdded = () => {
-    loadGames(); // Simplemente recargamos los juegos
+    loadGames();
   };
 
+  // Función para eliminar un juego.
   const handleDeleteGame = async (gameId) => {
     if (!window.confirm('¿Estás seguro de que quieres eliminar este juego? Esta acción no se puede deshacer.')) {
       return;
     }
-
     try {
-      const response = await fetch(`/api/games/${gameId}`, { method: 'DELETE' });
+      const response = await fetch(`http://localhost:3000/api/games/${gameId}`, { method: 'DELETE' });
       if (response.ok) {
         setGames(games.filter(game => game.id !== gameId));
       } else {
@@ -199,9 +222,10 @@ function GamesPanel({ view, searchTerm }) {
     }
   };
 
+  // Función para actualizar el nombre de un juego.
   const handleUpdateGame = async (gameId, newName) => {
     try {
-      const response = await fetch(`/api/games/${gameId}`, {
+      const response = await fetch(`http://localhost:3000/api/games/${gameId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nombre: newName }),
@@ -218,7 +242,7 @@ function GamesPanel({ view, searchTerm }) {
     }
   };
 
-  // Filtramos los juegos basándonos en el término de búsqueda
+  // Filtra los juegos mostrados basándose en el término de búsqueda (prop 'searchTerm').
   const filteredGames = games.filter(game =>
     game.nombre.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -232,15 +256,18 @@ function GamesPanel({ view, searchTerm }) {
       <h2 className="mb-3">{view === 'favorites' ? 'Mis Juegos Favoritos' : 'Todos los Juegos'}</h2>
 
       {/* Grilla de juegos existentes */}
+      {/* Se muestra un mensaje diferente dependiendo del estado (cargando, error, sin resultados, etc.). */}
       <div className="game-grid">
         {error && <p>{error}</p>}
         {loading && <p>Cargando juegos...</p>}
+        {/* Si no está cargando, no hay error y hay juegos, se muestran las tarjetas. */}
         {!loading && !error && filteredGames.length > 0 && (
           filteredGames.map(game => (
             <GameCard key={game.id} game={game} onToggleFavorite={handleToggleFavorite} onDelete={handleDeleteGame} onUpdate={handleUpdateGame} />
           ))
         )}
         {!loading && !error && games.length > 0 && filteredGames.length === 0 && (
+          // Mensaje si la búsqueda no arroja resultados.
           <p>No se encontraron juegos que coincidan con tu búsqueda.</p>
         )}
         {!loading && !error && games.length === 0 && (
@@ -251,6 +278,8 @@ function GamesPanel({ view, searchTerm }) {
   );
 }
 
+// --- Componente FriendListItem ---
+// Representa un solo amigo en la lista de amigos. Es similar a GameCard pero más simple.
 function FriendListItem({ friend, onDelete, onUpdate }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(friend.nombre);
@@ -300,6 +329,8 @@ function FriendListItem({ friend, onDelete, onUpdate }) {
   );
 }
 
+// --- Componente FriendsPanel ---
+// Panel que muestra la lista de amigos y un formulario para añadir nuevos.
 function FriendsPanel({ searchTerm }) {
   const [friends, setFriends] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -310,7 +341,7 @@ function FriendsPanel({ searchTerm }) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/friends');
+      const response = await fetch('http://localhost:3000/api/friends');
       if (!response.ok) {
         throw new Error('No se pudieron cargar los amigos.');
       }
@@ -333,7 +364,7 @@ function FriendsPanel({ searchTerm }) {
       return;
     }
     try {
-      const response = await fetch(`/api/friends/${friendId}`, { method: 'DELETE' });
+      const response = await fetch(`http://localhost:3000/api/friends/${friendId}`, { method: 'DELETE' });
       if (response.ok) {
         setFriends(friends.filter(friend => friend.id !== friendId));
       } else {
@@ -346,7 +377,7 @@ function FriendsPanel({ searchTerm }) {
 
   const handleUpdateFriend = async (friendId, newName) => {
     try {
-      const response = await fetch(`/api/friends/${friendId}`, {
+      const response = await fetch(`http://localhost:3000/api/friends/${friendId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nombre: newName }),
@@ -368,7 +399,7 @@ function FriendsPanel({ searchTerm }) {
     const form = e.target;
     const formData = new FormData(form);
     try {
-      const friendResponse = await fetch('/api/friends', {
+      const friendResponse = await fetch('http://localhost:3000/api/friends', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nombre: formData.get('nombre') }),
@@ -384,6 +415,7 @@ function FriendsPanel({ searchTerm }) {
     }
   };
 
+  // Filtra la lista de amigos según el término de búsqueda.
   const filteredFriends = friends.filter(friend =>
     friend.nombre.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -414,15 +446,19 @@ function FriendsPanel({ searchTerm }) {
   );
 }
 
+// --- Componente Principal App ---
+// Este es el componente raíz que organiza toda la aplicación.
 function App() {
+  // Estado para controlar qué panel se muestra: 'all', 'favorites', o 'friends'.
   const [view, setView] = useState('all'); // 'all', 'favorites', o 'friends'
+  // Estado para el término de búsqueda, compartido entre todos los paneles.
   const [searchTerm, setSearchTerm] = useState('');
 
   return (
     <div className="layout">
       {/* Menú lateral */}
       <aside>
-        <h3>🎮 Game Library</h3>
+        <h3><img src="/src/assets/logo_pestana.png" alt="logo" style={{ width: '30px', marginRight: '10px' }} />Game Library</h3>
         <div className="input-group my-3">
           <span className="input-group-text">🔍</span>
           <input
@@ -434,7 +470,7 @@ function App() {
           />
         </div>
         <nav>
-          {/* Estos enlaces ahora controlan el estado 'view' de React */}
+          {/* Estos enlaces controlan el estado 'view' de React. onClick previene la navegación normal y actualiza el estado. */}
           <a href="#" onClick={(e) => { e.preventDefault(); setView('all'); }} className={`nav-link ${view === 'all' ? 'active' : ''}`}>
             🗂️ Todos los juegos
           </a>
@@ -449,7 +485,7 @@ function App() {
 
       {/* Contenido principal */}
       <main>
-        {/* Renderizado condicional del panel */}
+        {/* Renderizado condicional: Muestra el panel de amigos o el de juegos según el estado 'view'. */}
         {view === 'friends'
           ? <FriendsPanel searchTerm={searchTerm} />
           : <GamesPanel view={view} searchTerm={searchTerm} />
@@ -459,4 +495,4 @@ function App() {
   );
 }
 
-export default App
+export default App;

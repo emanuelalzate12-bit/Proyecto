@@ -1,17 +1,24 @@
 <!DOCTYPE html>
 <html lang="es">
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Librería de videojuegos</title>
-  <link rel="icon" type="image/png" href="src/assets/logo_pestana.png?v=1.2" />
+<head> 
+  <!-- La sección <head> contiene metadatos sobre la página web, no el contenido visible. -->
+  <meta charset="UTF-8" /> <!-- Define la codificación de caracteres a UTF-8 para soportar todos los idiomas. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <!-- Configura la ventana de visualización para que la página sea responsiva en diferentes dispositivos. -->
+  <title>Librería de videojuegos</title> <!-- Título que aparece en la pestaña del navegador. -->
+  <link rel="icon" type="image/png" href="src/assets/logo_pestana.png?v=1.2" /> <!-- Define el favicon (icono de la pestaña del navegador). -->
 
   <!-- Bootstrap CSS desde CDN -->
+  <!-- Enlaza la hoja de estilos de Bootstrap desde un CDN (Content Delivery Network). -->
+  <!-- Bootstrap es un framework CSS que proporciona estilos predefinidos para componentes UI. -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
 
+  <!-- Bootstrap Icons desde CDN -->
+  <!-- Enlaza la biblioteca de iconos de Bootstrap, útil para añadir iconos a la interfaz. -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
+  <!-- Estilos CSS personalizados -->
+  <!-- Aquí se definen estilos CSS específicos para esta aplicación, sobrescribiendo o complementando los de Bootstrap. -->
   <style>
     body {
       background-color: #f8f9fa;
@@ -89,10 +96,12 @@
   </style>
 </head>
 
-<body>
+<body> 
+  <!-- La sección <body> contiene todo el contenido visible de la página web. -->
   <!-- React se encargará de renderizar todo el contenido aquí dentro -->
-  <div id="root"></div>
-  <script type="module" src="/src/main.jsx"></script>
+  <div id="root"></div> <!-- Este es el punto de montaje principal para la aplicación de React. Todo el contenido de React se inyectará aquí. -->
+  <!-- Script principal de la aplicación. 'type="module"' indica que es un módulo ES6. -->
+  <script type="module" src="/src/main.jsx"></script> 
 </body>
 
 </html>
